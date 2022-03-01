@@ -41,7 +41,10 @@ router.post("/signup", async (req, res) => {
     return res.status(201).json(createdUser);
   } catch (error) {
     console.error(error);
-    return res.status(500).json(error);
+    if (error.code === 11000) {
+      return res.status(400).json(error.message ? error.message : null);
+    }
+    return res.status(500).json({ msg: JSON.stringify(error) });
   }
 });
 
@@ -121,7 +124,9 @@ router.patch("/profile/update", isAuth, attachCurrentUser, async (req, res) => {
   }
 });
 
-router.delete(
+/* Soft delete */
+
+/* router.delete(
   "/disable-account",
   isAuth,
   attachCurrentUser,
@@ -144,6 +149,32 @@ router.delete(
     } catch (error) {
       console.error(error);
       return res.status(500).json({ msg: JSON.stringify(error) });
+    }
+  }
+); */
+
+/* Hard delete */
+
+router.delete(
+  "/disable-account",
+  isAuth,
+  attachCurrentUser,
+  async (req, res) => {
+    try {
+      const loggedInUser = req.currentUser;
+
+      const deletedUser = await UserModel.deleteOne({
+        _id: loggedInUser._id,
+      });
+
+      return res.status(200).json(deletedUser);
+    } catch (error) {
+      console.error(error);
+      /* Tratando os erros  */
+      /*  if (error.code === 11000){
+        return res.status(400).json(error.message)
+      }  */
+      return res.status(500).json(error);
     }
   }
 );
