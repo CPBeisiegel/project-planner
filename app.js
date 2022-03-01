@@ -20,6 +20,9 @@ app.use(`/api/${API_VERSION}/users`, userRouter);
 const goalRouter = require("./routes/goal.routes.js");
 app.use(`/api/${API_VERSION}/goals`, goalRouter);
 
+const taskRouter = require("./routes/task.routes");
+app.use(`/api/${API_VERSION}/tasks`, taskRouter);
+
 app.listen(Number(process.env.PORT), () => {
   console.log("Server UP! PORT: ", process.env.PORT);
 });

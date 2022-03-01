@@ -10,7 +10,6 @@ const isOwner = require("../utility/isOwner");
 
 router.post("/create-goal", isAuth, attachCurrentUser, async (req, res) => {
   try {
-    // o attachCurrentUser vai trazer essa informação
     const loggedInUser = req.currentUser;
 
     const createGoal = await GoalModel.create({
@@ -19,14 +18,18 @@ router.post("/create-goal", isAuth, attachCurrentUser, async (req, res) => {
     });
 
     await UserModel.findOneAndUpdate(
-      { _id: loggedInUser._id },
-      { $push: { goals: createGoal._id } },
+      {
+        _id: loggedInUser._id,
+      },
+      {
+        $push: { goals: createGoal._id },
+      },
       { new: true, runValidators: true }
     );
 
     return res.status(201).json(createGoal);
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     return res.status(500).json({ msg: JSON.stringify(error) });
   }
 });

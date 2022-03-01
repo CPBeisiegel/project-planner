@@ -6,6 +6,7 @@ const goalSchema = new Schema({
   deadline: { type: Date, required: true },
   owner: { type: mongoose.Types.ObjectId, ref: "User", required: true },
   tasks: [{ type: mongoose.Types.ObjectId, ref: "Task" }],
+  isComplete: { type: Boolean, default: false },
 });
 
 const GoalModel = model("Goal", goalSchema);
