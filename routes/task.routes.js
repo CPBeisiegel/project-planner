@@ -2,23 +2,19 @@ const router = require("express").Router();
 const attachCurrentUser = require("../middlewares/attachCurrentUser");
 const isAuth = require("../middlewares/isAuth");
 
-const updateDBDocument = require("../utilities/update");
-const isOwner = require("../utilities/isOwner");
+const updateDocument = require("../utility/upupdateDocument");
+const isOwner = require("../middlewares/isOwner");
 
-const GoalModel = require("../models/Goal.model");
-const TaskModel = require("../models/Task.model");
+const GoalModel = require("../models/Goal.Model");
+const TaskModel = require("../models/Task.Model");
 
 router.post(
-  "/create-task/:goalId",
+  "/:goalId/create-task",
   isAuth,
   attachCurrentUser,
+  isOwner,
   async (req, res) => {
     try {
-      const loggedInUser = req.currentUser;
-      const findGoal = await GoalModel.findOne({ _id: req.params.goalId });
-
-      isOwner(findGoal.owner, loggedInUser._id);
-
       const task = await TaskModel.create({
         ...req.body,
         goal: req.params.goalId,
@@ -31,17 +27,23 @@ router.post(
       ).populate("tasks");
 
       return res.status(200).json(updateGoal);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json(error);
+    } catch (err) {
+      console.log(err);
+
+      if (err.code === 11000) {
+        return res.status(400).json(err.message ? err.message : err);
+      }
+
+      res.status(500).json(err);
     }
   }
 );
 
 router.patch(
-  "/edit-title/:taskId",
+  "/:goalId/edit-title/:taskId",
   isAuth,
   attachCurrentUser,
+  isOwner,
   async (req, res) => {
     try {
       const taskToUpdate = await TaskModel.findOneAndUpdate(
@@ -51,17 +53,23 @@ router.patch(
       );
 
       return res.status(200).json(taskToUpdate);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json(error);
+    } catch (err) {
+      console.log(err);
+
+      if (err.code === 11000) {
+        return res.status(400).json(err.message ? err.message : err);
+      }
+
+      res.status(500).json(err);
     }
   }
 );
 
 router.patch(
-  "/toggle-status/:taskId",
+  "/:goalId/toggle-status/:taskId",
   isAuth,
   attachCurrentUser,
+  isOwner,
   async (req, res) => {
     try {
       const taskToEdit = await TaskModel.findOne({ _id: req.params.taskId });
@@ -105,9 +113,32 @@ router.patch(
       }
 
       return res.status(200).json(taskWithNewStatus);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json(error);
+    } catch (err) {
+      console.log(err);
+
+      if (err.code === 11000) {
+        return res.status(400).json(err.message ? err.message : err);
+      }
+
+      res.status(500).json(err);
+    }
+  }
+);
+
+router.delete(
+  "/:goalId/delete-task/:taskId",
+  isAuth,
+  attachCurrentUser,
+  isOwner,
+  async (req, res) => {
+    try {
+      const deleted = await TaskModel.deleteOne({ _id: req.params.taskId });
+
+      return res.status(200).json(deleted);
+    } catch (err) {
+      console.log(err);
+
+      res.status(500).json(err);
     }
   }
 );
